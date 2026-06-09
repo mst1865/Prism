@@ -1,0 +1,21 @@
+# Node.js 依赖与缓存
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Tauri / Rust 编译产物
+prism-ui/src-tauri/target/
+
+# TypeScript 构建产物
+prism-core/dist/
+prism-ui/dist/
+
+# 系统环境与配置
+.DS_Store
+.env
+.env.local
+.vscode/
+
+# 本地测试用的监控文件夹
+prism-core/dropzone/
+prism-core/test-watch/

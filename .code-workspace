@@ -1,0 +1,10 @@
+{
+  "folders": [
+    { "name": "01-Prism-Core", "path": "prism-core" },
+    { "name": "02-Prism-UI", "path": "prism-ui" }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.formatOnSave": true
+  }
+}

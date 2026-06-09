@@ -1,0 +1,16 @@
+{
+  "name": "prism-core",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "@types/node": "^20.0.0",
+    "chokidar": "^3.6.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
