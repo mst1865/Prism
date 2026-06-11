@@ -1,51 +1,96 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface PrismConfig {
+  vaultDir: string;
+  watchDirs: string[];
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+const defaultConfig: PrismConfig = {
+  vaultDir: "D:\\TolariaVault",
+  watchDirs: [],
+};
+
+function App() {
+  const [vaultDir, setVaultDir] = useState(defaultConfig.vaultDir);
+  const [watchDirsText, setWatchDirsText] = useState("");
+  const [status, setStatus] = useState("Loading Prism configuration...");
+  const watchDirCount = useMemo(
+    () => parseWatchDirs(watchDirsText).length,
+    [watchDirsText],
+  );
+
+  useEffect(() => {
+    invoke<PrismConfig>("get_prism_config")
+      .then((config) => {
+        setVaultDir(config.vaultDir || defaultConfig.vaultDir);
+        setWatchDirsText((config.watchDirs || []).join("\n"));
+        setStatus("Configuration loaded from %APPDATA%\\Prism\\config.json.");
+      })
+      .catch((error) => {
+        setStatus(`Unable to load configuration: ${String(error)}`);
+      });
+  }, []);
+
+  async function saveConfig() {
+    const config: PrismConfig = {
+      vaultDir: vaultDir.trim() || defaultConfig.vaultDir,
+      watchDirs: parseWatchDirs(watchDirsText),
+    };
+
+    try {
+      await invoke("save_prism_config", { config });
+      setStatus("Configuration saved. prism-core will use it on next command/watch start.");
+    } catch (error) {
+      setStatus(`Unable to save configuration: ${String(error)}`);
+    }
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <main className="settings-shell">
+      <section className="settings-header">
+        <div>
+          <p className="eyebrow">Project Prism</p>
+          <h1>Knowledge Pipeline Settings</h1>
+        </div>
+        <span className="status-pill">{watchDirCount} watch dirs</span>
+      </section>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+      <section className="settings-panel">
+        <label>
+          Vault directory
+          <input
+            value={vaultDir}
+            onChange={(event) => setVaultDir(event.currentTarget.value)}
+            placeholder="D:\\TolariaVault"
+          />
+        </label>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+        <label>
+          Watched directories
+          <textarea
+            value={watchDirsText}
+            onChange={(event) => setWatchDirsText(event.currentTarget.value)}
+            placeholder={"D:\\Downloads\nD:\\Documents\\Inbox"}
+            rows={7}
+          />
+        </label>
+
+        <div className="actions">
+          <button type="button" onClick={saveConfig}>Save configuration</button>
+          <p>{status}</p>
+        </div>
+      </section>
     </main>
   );
+}
+
+function parseWatchDirs(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 export default App;
