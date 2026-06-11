@@ -19,3 +19,6 @@ prism-ui/dist/
 # 本地测试用的监控文件夹
 prism-core/dropzone/
 prism-core/test-watch/
+
+# Local isolated implementation worktrees
+.worktrees/
